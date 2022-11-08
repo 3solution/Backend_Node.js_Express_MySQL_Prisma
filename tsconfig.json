@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "dist",
+    "strict": true,
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@daos/*": ["src/daos/*"],
+      "@models/*": ["src/models/*"],
+      "@entities/*": ["src/entities/*"],
+      "@shared/*": ["src/shared/*"],
+      "@server": ["src/Server"]
+    }
+  },
+  "include": ["src/**/*.ts", "spec/**/*.ts"],
+  "exclude": ["src/public/", "tests"]
+}

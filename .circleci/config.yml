@@ -1,0 +1,67 @@
+version: 2.1
+
+orbs:
+  aws-ecr: circleci/aws-ecr@7.0.0
+  aws-ecs: circleci/aws-ecs@2.2.1
+  sonarcloud: sonarsource/sonarcloud@1.0.0
+  heroku: circleci/heroku@1.2.6
+
+jobs:
+  sonar-scanner:
+    docker:
+      - image: "node:latest"
+    steps:
+      - checkout
+      - sonarcloud/scan
+
+  deploy-btcs-api-sandbox:
+    executor: heroku/default
+    steps:
+      - checkout
+      - heroku/install
+      - heroku/deploy-via-git:
+          force: true
+
+workflows:
+  deploy:
+    jobs:
+      - aws-ecr/build-and-push-image:
+          filters:
+            # ignore any commit on any branch by default
+            branches:
+              ignore: /.*/
+            # only act on version tags
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*$/
+          account-url: ECR_REGISTRY_URL
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          repo: btcs-analytics-api
+          dockerfile: Dockerfile
+          path: .
+          region: AWS_DEFAULT_REGION
+          tag: "latest,$CIRCLE_SHA1"
+      - aws-ecs/deploy-service-update:
+          filters:
+            # ignore any commit on any branch by default
+            branches:
+              ignore: /.*/
+            # only act on version tags
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*$/
+          requires:
+            - aws-ecr/build-and-push-image # only run this job once aws-ecr/build-and-push-image has completed
+          family: "btcs-analytics-task" #Task Name
+          service-name: "btcs-api-service"
+          cluster-name: "btcs-analytics-cluster"
+          container-image-name-updates: "container=btcs-api,tag=${CIRCLE_SHA1}"
+      - deploy-btcs-api-sandbox:
+          filters:
+            branches:
+              only: master
+  code-scan:
+    jobs:
+      - sonar-scanner:
+          filters:
+            branches:
+              only: master

@@ -1,0 +1,31 @@
+image: node
+
+clone:
+  depth: full
+
+definitions:
+  caches:
+    sonar: ~/.sonar/cache
+  steps:
+    - step: &build-test-sonarcloud
+        name: Build, test and analyze on SonarCloud
+        caches:
+          - sonar
+        script:
+          - npm i
+          - npm run build
+          - pipe: sonarsource/sonarcloud-scan:1.2.1
+    - step: &check-quality-gate-sonarcloud
+        name: Check the Quality Gate on SonarCloud
+        script:
+          - pipe: sonarsource/sonarcloud-quality-gate:0.1.4
+
+pipelines:
+  branches:
+    master:
+      - step: *build-test-sonarcloud
+      - step: *check-quality-gate-sonarcloud
+  pull-requests:
+    "**":
+      - step: *build-test-sonarcloud
+      - step: *check-quality-gate-sonarcloud

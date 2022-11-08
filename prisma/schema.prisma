@@ -1,0 +1,91 @@
+// This is your Prisma schema file
+// learn more about it in the docs https//pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int           @id @default(autoincrement())
+  email              String        @unique
+  name               String
+  surname            String
+  currency           String
+  phone              String        @unique
+  address1           String?
+  address2           String?
+  city               String?
+  country            String?
+  photoURL           String?
+  isVerified         Boolean       @default(false)
+  token              String?
+  password           String
+  passwordResetToken String?
+  deviceToken        String?
+  verificationToken  String?
+  confirmationCode   String?
+  terms_accepted_on  Int?
+  debug              Int?
+  isApproved         Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  Crypto             Crypto[]
+  Roles              Roles[]
+  Devices            Devices[]
+  LastLogin          LastLogin?
+  LastSyncTime       LastSyncTime?
+  Notification       Notification?
+}
+
+model Crypto {
+  id     Int     @id @default(autoincrement())
+  name   String?
+  userId Int
+  User   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Roles {
+  id     Int     @id @default(autoincrement())
+  name   String?
+  userId Int
+  User   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Devices {
+  id     Int     @id @default(autoincrement())
+  name   String?
+  userId Int
+  User   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LastLogin {
+  id        Int     @id @default(autoincrement())
+  date      String?
+  time      String?
+  ipAddress String?
+  userId    Int     @unique
+  User      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LastSyncTime {
+  id                Int  @id @default(autoincrement())
+  account_balance   Int?
+  chart_data        Int?
+  chart_data_hourly Int?
+  userId            Int  @unique
+  User              User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id           Int      @id @default(autoincrement())
+  displayed    Boolean?
+  acknowledged Boolean?
+  message      String?
+  userId       Int      @unique
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
