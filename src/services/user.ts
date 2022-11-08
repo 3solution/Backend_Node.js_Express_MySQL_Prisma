@@ -1,9 +1,8 @@
-import { IUser } from '@entities/User';
+import { IUser } from "@entities/User";
 import db from "src/utils/db";
-import { generateHash } from 'src/utils/hash';
 
 function findUser(cond: any) {
-  console.log('cond: ', cond);
+  console.log("cond: ", cond);
   return db.user.findUnique({
     where: cond,
   });
@@ -21,8 +20,4 @@ function createUser(user: IUser) {
   });
 }
 
-export {
-  findUser,
-  createUser,
-  findUserAll
-};
+export { findUser, createUser, findUserAll };
