@@ -1,23 +1,9 @@
-import { IUser } from "@entities/User";
 import db from "src/utils/db";
 
-function findUser(cond: any) {
-  console.log("cond: ", cond);
-  return db.user.findUnique({
-    where: cond,
+function getMembership(id: any) {
+  return db.users.findUnique({
+    where: { id },
   });
 }
 
-function findUserAll(cond: any) {
-  return db.user.findMany({
-    where: cond,
-  });
-}
-
-function createUser(user: IUser) {
-  return db.user.create({
-    data: user,
-  });
-}
-
-export { findUser, createUser, findUserAll };
+export { getMembership };

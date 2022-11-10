@@ -1,6 +1,3 @@
-// This is your Prisma schema file
-// learn more about it in the docs https//pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,4 +5,988 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model activity {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id     Int       @default(0) @db.UnsignedInt
+  username    String?   @db.VarChar(80)
+  ip          Bytes?    @db.VarBinary(16)
+  failed      Boolean   @default(false)
+  failed_last Int       @default(0) @db.UnsignedInt
+  type        String?   @db.VarChar(20)
+  message     String?   @db.VarChar(150)
+  importance  Boolean   @default(false)
+  created     DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model banlist {
+  id      Int          @id @default(autoincrement()) @db.UnsignedInt
+  item    String       @db.VarChar(50)
+  type    banlist_type @default(IP)
+  comment String       @db.VarChar(150)
+
+  @@index([item], map: "ban_ip")
+}
+
+model cart {
+  uid           Int      @id @default(0) @db.UnsignedInt
+  mid           Int      @default(0) @db.UnsignedInt
+  cid           Int      @default(0) @db.UnsignedInt
+  tax           Decimal  @default(0.00) @db.Decimal(13, 2)
+  totaltax      Decimal  @default(0.00) @db.Decimal(13, 2)
+  coupon        Decimal  @default(0.00) @db.Decimal(13, 2)
+  total         Decimal  @default(0.00) @db.Decimal(13, 2)
+  originalprice Decimal  @default(0.00) @db.Decimal(13, 2)
+  totalprice    Decimal  @default(0.00) @db.Decimal(13, 2)
+  cart_id       String?  @db.VarChar(100)
+  order_id      String?  @db.VarChar(100)
+  created       DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([mid], map: "idx_membership")
+  @@index([uid], map: "idx_user")
+}
+
+model countries {
+  id      Int     @id @default(autoincrement()) @db.UnsignedSmallInt
+  abbr    String  @unique(map: "abbrv") @db.VarChar(2)
+  name    String  @db.VarChar(70)
+  active  Boolean @default(true)
+  home    Boolean @default(false)
+  vat     Decimal @default(0.00) @db.Decimal(13, 2)
+  sorting Int     @default(0) @db.UnsignedSmallInt
+}
+
+model coupons {
+  id            Int          @id @default(autoincrement()) @db.UnsignedInt
+  title         String       @db.VarChar(100)
+  code          String       @db.VarChar(30)
+  discount      Int          @default(0) @db.UnsignedSmallInt
+  type          coupons_type @default(p)
+  membership_id String       @default("0") @db.VarChar(50)
+  ctype         String?      @db.VarChar(30)
+  created       DateTime     @default(now()) @db.Timestamp(0)
+  active        Boolean      @default(false)
+}
+
+model cronjobs {
+  id              Int      @id @default(autoincrement()) @db.UnsignedInt
+  user_id         Int      @default(0) @db.UnsignedInt
+  membership_id   Int      @default(0) @db.UnsignedInt
+  stripe_customer String   @db.VarChar(60)
+  stripe_pm       String   @db.VarChar(80)
+  amount          Decimal  @default(0.00) @db.Decimal(10, 2)
+  created         DateTime @default(now()) @db.Timestamp(0)
+  renewal         DateTime @db.DateTime(0)
+
+  @@index([membership_id], map: "idx_membership_id")
+  @@index([user_id], map: "idx_user_id")
+}
+
+model custom_fields {
+  id         Int     @id @default(autoincrement()) @db.UnsignedInt
+  title_en   String  @db.VarChar(60)
+  title_de   String  @db.VarChar(60)
+  title_nl   String  @db.VarChar(60)
+  title_fr   String  @db.VarChar(60)
+  tooltip_en String? @db.VarChar(100)
+  tooltip_de String? @db.VarChar(100)
+  tooltip_nl String? @db.VarChar(100)
+  tooltip_fr String? @db.VarChar(100)
+  name       String  @db.VarChar(20)
+  required   Boolean @default(false)
+  section    String? @db.VarChar(30)
+  sorting    Int     @default(0) @db.UnsignedInt
+  active     Boolean @default(false)
+}
+
+model custom_fields_data {
+  id           Int     @id @default(autoincrement()) @db.UnsignedInt
+  user_id      Int     @default(0) @db.UnsignedInt
+  field_id     Int     @default(0) @db.UnsignedInt
+  digishop_id  Int     @default(0) @db.UnsignedInt
+  portfolio_id Int     @default(0) @db.UnsignedInt
+  shop_id      Int     @default(0) @db.UnsignedInt
+  field_name   String? @db.VarChar(40)
+  field_value  String? @db.VarChar(100)
+  section      String? @db.VarChar(30)
+
+  @@index([digishop_id], map: "idx_digishop")
+  @@index([field_id], map: "idx_field")
+  @@index([portfolio_id], map: "idx_portfolio")
+  @@index([shop_id], map: "idx_shop")
+  @@index([user_id], map: "idx_user")
+}
+
+model email_templates {
+  id         Int                   @id @default(autoincrement()) @db.UnsignedInt
+  name_en    String                @db.VarChar(100)
+  name_de    String                @db.VarChar(100)
+  name_nl    String                @db.VarChar(100)
+  name_fr    String                @db.VarChar(100)
+  subject_en String                @db.VarChar(150)
+  subject_de String                @db.VarChar(150)
+  subject_nl String                @db.VarChar(150)
+  subject_fr String                @db.VarChar(150)
+  help_en    String?               @db.TinyText
+  help_de    String?               @db.TinyText
+  help_nl    String?               @db.TinyText
+  help_fr    String?               @db.TinyText
+  body_en    String                @db.Text
+  body_de    String                @db.Text
+  body_nl    String                @db.Text
+  body_fr    String                @db.Text
+  type       email_templates_type? @default(mailer)
+  typeid     String?               @db.VarChar(30)
+}
+
+model gateways {
+  id           Boolean @id
+  name         String  @db.VarChar(25)
+  displayname  String  @db.VarChar(50)
+  dir          String  @db.VarChar(25)
+  live         Boolean @default(true)
+  extra_txt    String? @db.VarChar(100)
+  extra_txt2   String? @db.VarChar(100)
+  extra_txt3   String? @db.VarChar(100)
+  extra        String? @db.VarChar(100)
+  extra2       String? @db.VarChar(100)
+  extra3       String? @db.Text
+  is_recurring Boolean @default(false)
+  active       Boolean @default(true)
+}
+
+model language {
+  id      Int               @id @default(autoincrement()) @db.UnsignedInt
+  name    String?           @db.VarChar(100)
+  abbr    String?           @db.VarChar(2)
+  langdir language_langdir? @default(ltr)
+  color   String?           @db.VarChar(7)
+  author  String?           @db.VarChar(200)
+  home    Boolean           @default(false)
+}
+
+model layout {
+  id           Int     @id @default(autoincrement())
+  plug_id      Int     @default(0) @db.UnsignedInt
+  page_id      Int     @default(0) @db.UnsignedInt
+  mod_id       Int     @default(0) @db.UnsignedInt
+  modalias     String? @db.VarChar(30)
+  page_slug_en String? @db.VarChar(150)
+  page_slug_de String? @db.VarChar(150)
+  page_slug_nl String? @db.VarChar(150)
+  page_slug_fr String? @db.VarChar(150)
+  is_content   Boolean @default(false)
+  plug_name    String? @db.VarChar(60)
+  place        String? @db.VarChar(20)
+  space        Int     @default(10) @db.UnsignedTinyInt
+  type         String? @db.VarChar(8)
+  sorting      Int     @default(0) @db.UnsignedInt
+
+  @@index([mod_id], map: "idx_mod_id")
+  @@index([page_id], map: "idx_page_id")
+  @@index([plug_id], map: "idx_plug_id")
+}
+
+model memberships {
+  id             Int     @id @default(autoincrement()) @db.UnsignedInt
+  title_en       String  @default("") @db.VarChar(80)
+  title_de       String  @db.VarChar(80)
+  title_nl       String  @db.VarChar(80)
+  title_fr       String  @db.VarChar(80)
+  description_en String? @db.VarChar(150)
+  description_de String? @db.VarChar(150)
+  description_nl String? @db.VarChar(150)
+  description_fr String? @db.VarChar(150)
+  thumb          String? @db.VarChar(40)
+  price          Float   @default(0.00) @db.Float
+  days           Int     @default(1) @db.UnsignedSmallInt
+  period         String  @default("D") @db.VarChar(1)
+  trial          Boolean @default(false)
+  recurring      Boolean @default(false)
+  private        Boolean @default(false)
+  active         Boolean @default(true)
+}
+
+model menus {
+  id           Int     @id @default(autoincrement()) @db.UnsignedInt
+  parent_id    Int     @default(0) @db.UnsignedInt
+  page_id      Int     @default(0) @db.UnsignedInt
+  page_slug_en String? @db.VarChar(100)
+  page_slug_de String? @db.VarChar(100)
+  page_slug_nl String? @db.VarChar(100)
+  page_slug_fr String? @db.VarChar(100)
+  name_en      String  @db.VarChar(100)
+  name_de      String  @db.VarChar(100)
+  name_nl      String  @db.VarChar(100)
+  name_fr      String  @db.VarChar(100)
+  mod_id       Int     @default(0) @db.UnsignedInt
+  mod_slug     String? @db.VarChar(100)
+  caption_en   String? @db.VarChar(100)
+  caption_de   String? @db.VarChar(100)
+  caption_nl   String? @db.VarChar(100)
+  caption_fr   String? @db.VarChar(100)
+  content_type String  @default("page") @db.VarChar(20)
+  link         String? @db.VarChar(200)
+  target       String  @default("_blank") @db.VarChar(15)
+  icon         String? @db.VarChar(50)
+  cols         Boolean @default(true)
+  position     Int     @default(0) @db.UnsignedInt
+  home_page    Boolean @default(false)
+  active       Boolean @default(false)
+
+  @@index([mod_id], map: "idx_mod_id")
+  @@index([page_id], map: "idx_page_id")
+  @@index([parent_id], map: "idx_parent_id")
+}
+
+model mod_adblock {
+  id                   Int       @id @default(autoincrement()) @db.UnsignedInt
+  title_en             String    @db.VarChar(100)
+  title_de             String    @db.VarChar(100)
+  title_nl             String    @db.VarChar(100)
+  title_fr             String    @db.VarChar(100)
+  plugin_id            String    @db.VarChar(30)
+  start_date           DateTime? @db.Date
+  end_date             DateTime? @db.Date
+  total_views_allowed  Int       @default(0) @db.UnsignedInt
+  total_clicks_allowed Int       @default(0) @db.UnsignedInt
+  minimum_ctr          Decimal   @default(0.00) @db.Decimal(10, 2)
+  image                String?   @db.VarChar(50)
+  image_link           String?   @db.VarChar(100)
+  image_alt            String?   @db.VarChar(100)
+  html                 String?   @db.Text
+  total_views          Int       @default(0) @db.UnsignedInt
+  total_clicks         Int       @default(0) @db.UnsignedInt
+  created              DateTime  @default(now()) @db.Timestamp(0)
+}
+
+model mod_comments {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  comment_id Int      @default(0) @db.UnsignedInt
+  user_id    Int      @default(0) @db.UnsignedInt
+  parent_id  Int      @default(0) @db.UnsignedInt
+  username   String?  @db.VarChar(50)
+  section    String   @db.VarChar(20)
+  vote_up    Int      @default(0) @db.UnsignedInt
+  vote_down  Int      @default(0)
+  body       String?  @db.Text
+  created    DateTime @default(now()) @db.Timestamp(0)
+  active     Boolean  @default(false)
+
+  @@index([comment_id], map: "idx_comment_id")
+  @@index([parent_id], map: "idx_parent")
+  @@index([user_id], map: "idx_user_id")
+}
+
+model mod_digishop {
+  id             Int      @id @default(autoincrement()) @db.UnsignedInt
+  category_id    Int      @default(0) @db.UnsignedInt
+  title_en       String   @db.VarChar(100)
+  title_fr       String   @db.VarChar(100)
+  title_nl       String   @db.VarChar(100)
+  title_de       String   @db.VarChar(100)
+  slug_en        String   @db.VarChar(100)
+  slug_fr        String   @db.VarChar(100)
+  slug_nl        String   @db.VarChar(100)
+  slug_de        String   @db.VarChar(100)
+  price          Decimal  @default(0.00) @db.Decimal(12, 2)
+  downloads      Int      @default(-1)
+  categories     String?  @default("0") @db.VarChar(60)
+  membership_id  String?  @default("0") @db.VarChar(20)
+  body_en        String?  @db.Text
+  body_fr        String?  @db.Text
+  body_nl        String?  @db.Text
+  body_de        String?  @db.Text
+  keywords_en    String?  @db.VarChar(200)
+  keywords_fr    String?  @db.VarChar(200)
+  keywords_nl    String?  @db.VarChar(200)
+  keywords_de    String?  @db.VarChar(200)
+  description_en String?  @db.Text
+  description_fr String?  @db.Text
+  description_nl String?  @db.Text
+  description_de String?  @db.Text
+  likes          Int      @default(0) @db.UnsignedInt
+  thumb          String?  @db.VarChar(40)
+  poster         String?  @db.VarChar(40)
+  images         Bytes?   @db.Blob
+  file           String?  @db.VarChar(40)
+  token          String?  @db.VarChar(60)
+  created        DateTime @default(now()) @db.Timestamp(0)
+  active         Boolean  @default(true)
+
+  @@index([category_id], map: "idx_cat_id")
+}
+
+model mod_digishop_cart {
+  id            Int      @id @default(autoincrement()) @db.UnsignedInt
+  uid           String   @default("0") @db.VarChar(64)
+  pid           Int      @default(0) @db.UnsignedInt
+  tax           Decimal  @default(0.00) @db.Decimal(13, 2)
+  totaltax      Decimal  @default(0.00) @db.Decimal(13, 2)
+  coupon        Decimal  @default(0.00) @db.Decimal(13, 2)
+  total         Decimal  @default(0.00) @db.Decimal(13, 2)
+  originalprice Decimal  @default(0.00) @db.Decimal(13, 2)
+  totalprice    Decimal  @default(0.00) @db.Decimal(13, 2)
+  cart_id       String?  @db.VarChar(100)
+  order_id      String?  @db.VarChar(100)
+  created       DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([pid], map: "idx_product")
+  @@index([uid], map: "idx_user")
+}
+
+model mod_digishop_categories {
+  id             Int     @id @default(autoincrement()) @db.UnsignedInt
+  parent_id      Int     @default(0) @db.UnsignedInt
+  name_en        String  @db.VarChar(100)
+  name_fr        String  @db.VarChar(100)
+  slug_en        String  @db.VarChar(60)
+  slug_fr        String  @db.VarChar(100)
+  keywords_en    String? @db.VarChar(120)
+  keywords_fr    String? @db.VarChar(200)
+  description_en String? @db.Text
+  description_fr String? @db.Text
+  sorting        Int     @default(0) @db.UnsignedInt
+  active         Boolean @default(true)
+
+  @@index([parent_id], map: "idx_parent_id")
+}
+
+model mod_digishop_gallery {
+  id        Int     @id @default(autoincrement()) @db.UnsignedInt
+  parent_id Int     @default(0)
+  name      String? @db.VarChar(60)
+  sorting   Int     @default(0) @db.UnsignedInt
+
+  @@index([parent_id], map: "idx_parent_id")
+}
+
+model mod_digishop_payments {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id   Int       @default(0) @db.UnsignedInt
+  item_id   Int       @default(0) @db.UnsignedInt
+  downloads Int       @default(-1)
+  txn_id    String?   @db.VarChar(80)
+  coupon    Decimal   @default(0.00) @db.Decimal(12, 2)
+  tax       Decimal   @default(0.00) @db.Decimal(12, 2)
+  amount    Decimal   @default(0.00) @db.Decimal(12, 2)
+  total     Decimal   @default(0.00) @db.Decimal(12, 2)
+  token     String?   @db.VarChar(80)
+  pp        String?   @db.VarChar(50)
+  currency  String?   @db.VarChar(6)
+  ip        Bytes?    @default(dbgenerated("000.000.000.000")) @db.VarBinary(16)
+  status    Boolean   @default(false)
+  created   DateTime? @default(now()) @db.Timestamp(0)
+
+  @@index([item_id], map: "idx_item_id")
+  @@index([user_id], map: "idx_user_id")
+}
+
+model mod_digishop_related_categories {
+  id          Int @id @default(autoincrement()) @db.UnsignedInt
+  item_id     Int @default(0) @db.UnsignedInt
+  category_id Int @default(0) @db.UnsignedInt
+
+  @@index([category_id], map: "idx_cat_id")
+  @@index([item_id], map: "idx_item_id")
+}
+
+model mod_events {
+  id             Int       @id @default(autoincrement()) @db.UnsignedInt
+  user_id        Int       @default(0) @db.UnsignedInt
+  title_en       String    @db.VarChar(100)
+  title_de       String    @db.VarChar(100)
+  title_nl       String    @db.VarChar(100)
+  title_fr       String    @db.VarChar(100)
+  venue_en       String?   @db.VarChar(100)
+  venue_de       String?   @db.VarChar(100)
+  venue_nl       String?   @db.VarChar(100)
+  venue_fr       String?   @db.VarChar(100)
+  date_start     DateTime? @db.Date
+  date_end       DateTime? @db.Date
+  time_start     DateTime? @db.Time(0)
+  time_end       DateTime? @db.Time(0)
+  body_en        String?   @db.Text
+  body_de        String?   @db.Text
+  body_nl        String?   @db.Text
+  body_fr        String?   @db.Text
+  contact_person String?   @db.VarChar(100)
+  contact_email  String?   @db.VarChar(80)
+  contact_phone  String?   @db.VarChar(24)
+  color          String?   @db.VarChar(7)
+  active         Boolean   @default(false)
+}
+
+model mod_faq {
+  id          Int     @id @default(autoincrement()) @db.UnsignedInt
+  category_id Int     @default(0) @db.UnsignedInt
+  question_en String? @db.VarChar(150)
+  question_de String  @db.VarChar(100)
+  question_nl String  @db.VarChar(100)
+  question_fr String  @db.VarChar(100)
+  answer_en   String? @db.Text
+  answer_de   String? @db.Text
+  answer_nl   String? @db.Text
+  answer_fr   String? @db.Text
+  sorting     Int     @default(0) @db.UnsignedInt
+
+  @@index([category_id], map: "ixd_category")
+}
+
+model mod_faq_categories {
+  id      Int    @id @default(autoincrement()) @db.UnsignedInt
+  name_en String @db.VarChar(50)
+  name_de String @db.VarChar(50)
+  name_nl String @db.VarChar(50)
+  name_fr String @db.VarChar(50)
+  sorting Int    @default(0) @db.UnsignedInt
+}
+
+model mod_gallery {
+  id             Int     @id @default(autoincrement()) @db.UnsignedInt
+  title_en       String  @db.VarChar(60)
+  title_de       String  @db.VarChar(60)
+  title_nl       String  @db.VarChar(60)
+  title_fr       String  @db.VarChar(60)
+  slug_en        String? @db.VarChar(100)
+  slug_de        String  @db.VarChar(100)
+  slug_nl        String  @db.VarChar(100)
+  slug_fr        String  @db.VarChar(100)
+  description_en String? @db.VarChar(100)
+  description_de String? @db.VarChar(100)
+  description_nl String? @db.VarChar(100)
+  description_fr String? @db.VarChar(100)
+  thumb_w        Int?    @default(500) @db.UnsignedSmallInt
+  thumb_h        Int     @default(500) @db.UnsignedSmallInt
+  poster         String? @db.VarChar(60)
+  cols           Int     @default(300) @db.UnsignedSmallInt
+  dir            String  @db.VarChar(40)
+  resize         String? @db.VarChar(30)
+  watermark      Boolean @default(false)
+  likes          Boolean @default(false)
+  sorting        Int     @default(0) @db.UnsignedInt
+}
+
+model mod_gallery_data {
+  id             Int     @id @default(autoincrement()) @db.UnsignedInt
+  parent_id      Int     @default(0)
+  title_en       String  @db.VarChar(80)
+  title_de       String  @db.VarChar(80)
+  title_nl       String  @db.VarChar(80)
+  title_fr       String  @db.VarChar(80)
+  description_en String? @db.VarChar(200)
+  description_de String? @db.VarChar(200)
+  description_nl String? @db.VarChar(200)
+  description_fr String? @db.VarChar(200)
+  thumb          String? @db.VarChar(80)
+  likes          Int     @default(0) @db.UnsignedInt
+  sorting        Int     @default(0) @db.UnsignedInt
+
+  @@index([parent_id], map: "idx_parent_id")
+}
+
+model mod_gmaps {
+  id           Int     @id @default(autoincrement()) @db.UnsignedInt
+  name         String  @db.VarChar(60)
+  plugin_id    String? @db.VarChar(40)
+  lat          Decimal @default(0.000000) @db.Decimal(10, 6)
+  lng          Decimal @default(0.000000) @db.Decimal(10, 6)
+  body         String? @db.TinyText
+  zoom         Int     @default(12) @db.UnsignedTinyInt
+  minmaxzoom   String? @db.VarChar(5)
+  layout       String? @db.VarChar(50)
+  type         String? @db.VarChar(10)
+  type_control Boolean @default(false)
+  streetview   Boolean @default(true)
+  style        Bytes?  @db.Blob
+  pin          String? @db.VarChar(30)
+}
+
+model mod_timeline {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  name      String?  @db.VarChar(100)
+  plugin_id String?  @db.VarChar(25)
+  type      String?  @db.VarChar(20)
+  limiter   Int      @default(10) @db.UnsignedTinyInt
+  showmore  Boolean  @default(false)
+  maxitems  Boolean  @default(false)
+  colmode   String?  @default("dual") @db.VarChar(20)
+  readmore  String?  @db.VarChar(150)
+  rssurl    String?  @db.VarChar(200)
+  fbid      String?  @db.VarChar(150)
+  fbpage    String?  @db.VarChar(150)
+  fbtoken   String?  @db.VarChar(150)
+  created   DateTime @default(now()) @db.Timestamp(0)
+}
+
+model mod_timeline_data {
+  id       Int      @id @default(autoincrement()) @db.UnsignedInt
+  tid      Int      @default(0) @db.UnsignedInt
+  type     String?  @db.VarChar(30)
+  title_en String?  @db.VarChar(100)
+  title_de String   @db.VarChar(100)
+  title_nl String   @db.VarChar(100)
+  title_fr String   @db.VarChar(100)
+  body_en  String?  @db.Text
+  body_de  String?  @db.Text
+  body_nl  String?  @db.Text
+  body_fr  String?  @db.Text
+  images   Bytes?   @db.Blob
+  dataurl  String?  @db.VarChar(250)
+  height   Int      @default(300) @db.UnsignedSmallInt
+  readmore String?  @db.VarChar(200)
+  created  DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([tid], map: "tid")
+}
+
+model modules {
+  id             Int      @id @default(autoincrement()) @db.UnsignedInt
+  title_en       String   @db.VarChar(120)
+  title_de       String   @db.VarChar(120)
+  title_nl       String   @db.VarChar(120)
+  title_fr       String   @db.VarChar(120)
+  info_en        String?  @db.VarChar(200)
+  info_de        String?  @db.VarChar(200)
+  info_nl        String?  @db.VarChar(200)
+  info_fr        String?  @db.VarChar(200)
+  modalias       String   @db.VarChar(60)
+  hasconfig      Boolean  @default(false)
+  hascoupon      Boolean  @default(false)
+  hasfields      Boolean  @default(false)
+  system         Boolean  @default(false)
+  content        Boolean  @default(false)
+  parent_id      Int      @default(0) @db.UnsignedSmallInt
+  is_menu        Boolean  @default(false)
+  is_builder     Boolean  @default(false)
+  keywords_en    String?  @db.VarChar(200)
+  keywords_de    String?  @db.VarChar(200)
+  keywords_nl    String?  @db.VarChar(200)
+  keywords_fr    String?  @db.VarChar(200)
+  description_en String?  @db.Text
+  description_de String?  @db.Text
+  description_nl String?  @db.Text
+  description_fr String?  @db.Text
+  icon           String?  @db.VarChar(50)
+  ver            Decimal  @default(1.00) @db.Decimal(4, 2)
+  created        DateTime @default(now()) @db.Timestamp(0)
+  active         Boolean  @default(false)
+}
+
+model pages {
+  id              Int             @id @default(autoincrement()) @db.UnsignedInt
+  title_en        String          @db.VarChar(200)
+  title_de        String          @db.VarChar(200)
+  title_nl        String          @db.VarChar(200)
+  title_fr        String          @db.VarChar(200)
+  slug_en         String?         @db.VarChar(150)
+  slug_de         String?         @db.VarChar(200)
+  slug_nl         String?         @db.VarChar(200)
+  slug_fr         String?         @db.VarChar(200)
+  caption_en      String?         @db.VarChar(150)
+  caption_de      String?         @db.VarChar(150)
+  caption_nl      String?         @db.VarChar(150)
+  caption_fr      String?         @db.VarChar(150)
+  is_admin        Boolean         @default(true)
+  page_type       pages_page_type @default(normal)
+  membership_id   String          @default("0") @db.VarChar(20)
+  is_comments     Boolean         @default(false)
+  custom_bg_en    String?         @db.VarChar(100)
+  custom_bg_de    String?         @db.VarChar(100)
+  custom_bg_nl    String?         @db.VarChar(100)
+  custom_bg_fr    String?         @db.VarChar(100)
+  show_header     Boolean         @default(true)
+  theme           String?         @db.VarChar(60)
+  access          pages_access    @default(Public)
+  body_en         String?         @db.Text
+  body_de         String?         @db.Text
+  body_nl         String?         @db.Text
+  body_fr         String?         @db.Text
+  jscode          String?         @db.Text
+  keywords_en     String?         @db.VarChar(200)
+  keywords_de     String?         @db.VarChar(200)
+  keywords_nl     String?         @db.VarChar(200)
+  keywords_fr     String?         @db.VarChar(200)
+  description_en  String?         @db.Text
+  description_de  String?         @db.Text
+  description_nl  String?         @db.Text
+  description_fr  String?         @db.Text
+  created         DateTime        @default(now()) @db.Timestamp(0)
+  created_by      Int             @default(0) @db.UnsignedInt
+  created_by_name String?         @db.VarChar(80)
+  is_system       Boolean         @default(false)
+  active          Boolean         @default(true)
+}
+
+model payments {
+  id            Int      @id @default(autoincrement()) @db.UnsignedInt
+  txn_id        String?  @db.VarChar(50)
+  membership_id Int      @default(0) @db.UnsignedInt
+  user_id       Int      @default(0) @db.UnsignedInt
+  rate_amount   Decimal  @default(0.00) @db.Decimal(12, 2)
+  tax           Decimal  @default(0.00) @db.Decimal(12, 2)
+  coupon        Decimal  @default(0.00) @db.Decimal(12, 2)
+  total         Decimal  @default(0.00) @db.Decimal(12, 2)
+  currency      String?  @db.VarChar(4)
+  pp            String   @default("Stripe") @db.VarChar(20)
+  ip            Bytes?   @default(dbgenerated("000.000.000.000")) @db.VarBinary(16)
+  created       DateTime @default(now()) @db.Timestamp(0)
+  status        Boolean  @default(false)
+
+  @@index([membership_id], map: "idx_membership")
+  @@index([user_id], map: "idx_user")
+}
+
+model plug_carousel {
+  id       Int     @id @default(autoincrement()) @db.UnsignedInt
+  title_en String  @db.VarChar(100)
+  title_de String  @db.VarChar(100)
+  title_nl String  @db.VarChar(100)
+  title_fr String  @db.VarChar(100)
+  body_en  String? @db.Text
+  body_de  String? @db.Text
+  body_nl  String? @db.Text
+  body_fr  String? @db.Text
+  dots     Boolean @default(false)
+  nav      Boolean @default(false)
+  autoplay Boolean @default(false)
+  margin   Int     @default(0) @db.UnsignedSmallInt
+  loop     Boolean @default(false)
+  settings Bytes?  @db.Blob
+}
+
+model plug_donation {
+  id            Int     @id @default(autoincrement()) @db.UnsignedInt
+  title         String? @db.VarChar(80)
+  target_amount Decimal @default(0.00) @db.Decimal(12, 2)
+  pp_email      String  @db.VarChar(80)
+  redirect_page Int     @default(0) @db.UnsignedInt
+}
+
+model plug_donation_data {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  parent_id Int      @default(0) @db.UnsignedInt
+  amount    Decimal  @default(0.00) @db.Decimal(12, 2)
+  name      String?  @db.VarChar(80)
+  email     String?  @db.VarChar(60)
+  pp        String?  @db.VarChar(50)
+  created   DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([parent_id], map: "idx_parent_id")
+}
+
+model plug_newsletter {
+  id      Int      @id @default(autoincrement()) @db.UnsignedInt
+  email   String?  @db.VarChar(100)
+  created DateTime @default(now()) @db.Timestamp(0)
+}
+
+model plug_poll_options {
+  id          Int    @id @default(autoincrement()) @db.UnsignedInt
+  question_id Int    @db.UnsignedInt
+  value       String @db.VarChar(150)
+  position    Int    @default(0) @db.UnsignedTinyInt
+
+  @@index([question_id], map: "idx_question")
+}
+
+model plug_poll_questions {
+  id       Int       @id @default(autoincrement()) @db.UnsignedInt
+  question String    @db.VarChar(150)
+  created  DateTime? @default(now()) @db.Timestamp(0)
+  status   Boolean   @default(false)
+}
+
+model plug_poll_votes {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  option_id Int      @db.UnsignedInt
+  voted_on  DateTime @default(now()) @db.Timestamp(0)
+  ip        Bytes?   @db.VarBinary(16)
+
+  @@index([option_id], map: "idx_option")
+}
+
+model plug_rss {
+  id        Int     @id @default(autoincrement()) @db.UnsignedInt
+  title     String  @db.VarChar(50)
+  url       String  @db.VarChar(120)
+  items     Boolean @default(true)
+  show_date Boolean @default(true)
+  show_desc Boolean @default(true)
+  max_words Int     @default(100) @db.UnsignedSmallInt
+}
+
+model plug_slider {
+  id                 Int     @id @default(autoincrement()) @db.UnsignedInt
+  title              String  @db.VarChar(80)
+  type               String? @db.VarChar(15)
+  layout             String? @db.VarChar(25)
+  autoplay           Boolean @default(false)
+  autoplaySpeed      Int     @default(1000) @db.UnsignedSmallInt
+  autoplayHoverPause Boolean @default(true)
+  autoloop           Boolean @default(true)
+  height             Int     @default(100) @db.UnsignedSmallInt
+  fullscreen         Boolean @default(false)
+  settings           Bytes?  @db.Blob
+}
+
+model plug_slider_data {
+  id        Int     @id @default(autoincrement()) @db.UnsignedInt
+  parent_id Int     @default(0) @db.UnsignedInt
+  title     String  @db.VarChar(50)
+  html_raw  String? @db.Text
+  html      String? @db.Text
+  image     String? @db.VarChar(60)
+  color     String? @db.VarChar(30)
+  attrib    String? @db.VarChar(60)
+  mode      String  @default("bg") @db.VarChar(2)
+  sorting   Int     @default(0) @db.UnsignedInt
+
+  @@index([parent_id], map: "idx_parent")
+}
+
+model plug_yplayer {
+  id     Int     @id @default(autoincrement()) @db.UnsignedInt
+  title  String? @db.VarChar(50)
+  layout String? @db.VarChar(10)
+  config Bytes?  @db.Blob
+}
+
+model plugins {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  title_en   String   @db.VarChar(120)
+  title_de   String   @db.VarChar(120)
+  title_nl   String   @db.VarChar(120)
+  title_fr   String   @db.VarChar(120)
+  body_en    String?  @db.Text
+  body_de    String?  @db.Text
+  body_nl    String?  @db.Text
+  body_fr    String?  @db.Text
+  jscode     String?  @db.Text
+  show_title Boolean  @default(false)
+  alt_class  String?  @db.VarChar(30)
+  system     Boolean  @default(true)
+  cplugin    Boolean  @default(false)
+  info_en    String?  @db.VarChar(150)
+  info_de    String?  @db.VarChar(150)
+  info_nl    String?  @db.VarChar(150)
+  info_fr    String?  @db.VarChar(150)
+  plugalias  String?  @db.VarChar(50)
+  hasconfig  Boolean  @default(false)
+  multi      Boolean  @default(false)
+  parent_id  Int      @default(0) @db.UnsignedInt
+  plugin_id  Int      @default(0) @db.UnsignedInt
+  groups     String?  @db.VarChar(20)
+  created    DateTime @default(now()) @db.Timestamp(0)
+  icon       String?  @db.VarChar(60)
+  ver        Decimal  @default(1.00) @db.Decimal(4, 2)
+  active     Boolean  @default(false)
+
+  @@index([plugin_id], map: "idx_plugin_id")
+}
+
+model privileges {
+  id          Int     @id @default(autoincrement()) @db.UnsignedSmallInt
+  code        String  @db.VarChar(20)
+  name        String  @unique(map: "name") @db.VarChar(30)
+  description String? @db.VarChar(60)
+  mode        String  @db.VarChar(8)
+  type        String? @db.VarChar(40)
+}
+
+model role_privileges {
+  id     Int     @id @default(autoincrement()) @db.UnsignedInt
+  rid    Int     @default(0) @db.UnsignedInt
+  pid    Int     @default(0) @db.UnsignedInt
+  active Boolean @default(true)
+
+  @@index([rid, pid], map: "idx")
+}
+
+model roles {
+  id          Int     @id @default(autoincrement()) @db.UnsignedSmallInt
+  code        String  @db.VarChar(10)
+  icon        String? @db.VarChar(20)
+  name        String  @unique(map: "name") @db.VarChar(30)
+  description String  @db.VarChar(200)
+}
+
+model settings {
+  id            Boolean   @id
+  site_name     String    @db.VarChar(100)
+  company       String    @db.VarChar(100)
+  site_dir      String?   @db.VarChar(50)
+  site_email    String    @db.VarChar(50)
+  theme         String    @db.VarChar(32)
+  perpage       Int       @db.UnsignedTinyInt
+  backup        String    @db.VarChar(64)
+  thumb_w       Int       @db.UnsignedTinyInt
+  thumb_h       Int       @db.UnsignedTinyInt
+  img_w         Int       @db.UnsignedSmallInt
+  img_h         Int       @db.UnsignedSmallInt
+  avatar_w      Int       @db.UnsignedTinyInt
+  avatar_h      Int       @db.UnsignedTinyInt
+  short_date    String    @db.VarChar(20)
+  long_date     String    @db.VarChar(30)
+  time_format   String?   @db.VarChar(10)
+  calendar_date String?   @db.VarChar(30)
+  dtz           String?   @db.VarChar(120)
+  locale        String?   @db.VarChar(200)
+  weekstart     Boolean   @default(true)
+  lang          String    @default("en") @db.VarChar(2)
+  lang_list     Bytes     @db.Blob
+  ploader       Boolean   @default(true)
+  eucookie      Boolean   @default(false)
+  offline       Boolean   @default(false)
+  offline_msg   String?   @db.Text
+  offline_d     DateTime? @db.Date
+  offline_t     DateTime? @db.Time(0)
+  offline_info  String?   @db.Text
+  logo          String?   @db.VarChar(50)
+  plogo         String?   @db.VarChar(50)
+  showlang      Boolean   @default(false)
+  showlogin     Boolean   @default(true)
+  showsearch    Boolean   @default(true)
+  showcrumbs    Boolean   @default(true)
+  currency      String?   @db.VarChar(4)
+  enable_tax    Boolean   @default(true)
+  file_size     Int       @default(20971520) @db.UnsignedInt
+  file_ext      String    @default("png,jpg,jpeg,bmp") @db.VarChar(150)
+  reg_verify    Boolean   @default(true)
+  auto_verify   Boolean   @default(true)
+  notify_admin  Boolean   @default(false)
+  flood         Int       @default(3600) @db.UnsignedInt
+  attempt       Boolean   @default(false)
+  logging       Boolean   @default(false)
+  analytics     String?   @db.VarChar(100)
+  mailer        String    @default("SMTP") @db.VarChar(8)
+  sendmail      String?   @db.VarChar(60)
+  smtp_host     String?   @db.VarChar(150)
+  smtp_user     String?   @db.VarChar(50)
+  smtp_pass     String?   @db.VarChar(50)
+  smtp_port     String?   @db.VarChar(3)
+  is_ssl        Boolean   @default(false)
+  inv_info      String?   @db.Text
+  inv_note      String?   @db.Text
+  system_slugs  Bytes?    @db.Blob
+  url_slugs     Bytes?    @db.Blob
+  social_media  Bytes?    @db.Blob
+  ytapi         String?   @db.VarChar(120)
+  mapapi        String?   @db.VarChar(120)
+  wojon         Decimal   @default(0.00) @db.Decimal(4, 2)
+  wojov         Decimal   @default(0.00) @db.Decimal(4, 2)
+}
+
+model stats {
+  id             Int       @id @default(autoincrement()) @db.UnsignedInt
+  day            DateTime? @default(now()) @db.Timestamp(0)
+  pageviews      Int       @default(0) @db.UnsignedInt
+  uniquevisitors Int       @default(0) @db.UnsignedInt
+}
+
+model trash {
+  id        Int      @id @default(autoincrement()) @db.UnsignedInt
+  parent    String?  @db.VarChar(15)
+  parent_id Int      @default(0) @db.UnsignedInt
+  type      String?  @db.VarChar(15)
+  dataset   Bytes?   @db.Blob
+  created   DateTime @default(now()) @db.Timestamp(0)
+}
+
+model user_memberships {
+  id        Int       @id @default(autoincrement()) @db.UnsignedInt
+  tid       Int       @default(0) @db.UnsignedInt
+  uid       Int       @default(0) @db.UnsignedInt
+  mid       Int       @default(0) @db.UnsignedInt
+  activated DateTime? @default(now()) @db.Timestamp(0)
+  expire    DateTime? @db.Timestamp(0)
+  recurring Boolean   @default(false)
+  active    Boolean   @default(false)
+}
+
+model users {
+  id            Int          @id @default(autoincrement()) @db.UnsignedInt
+  username      String       @db.VarChar(50)
+  fname         String       @db.VarChar(32)
+  lname         String       @db.VarChar(32)
+  email         String       @db.VarChar(60)
+  membership_id Int          @default(0) @db.UnsignedTinyInt
+  mem_expire    DateTime?    @db.DateTime(0)
+  trial_used    Boolean      @default(false)
+  memused       Boolean      @default(false)
+  salt          String       @db.VarChar(25)
+  hash          String       @db.VarChar(70)
+  password      String       @db.VarChar(50)
+  token         String       @default("0") @db.VarChar(40)
+  userlevel     Boolean      @default(true)
+  type          String       @default("member") @db.VarChar(10)
+  created       DateTime     @default(now()) @db.Timestamp(0)
+  lastlogin     DateTime?    @db.DateTime(0)
+  lastip        Bytes?       @default(dbgenerated("000.000.000.000")) @db.VarBinary(16)
+  avatar        String?      @db.VarChar(50)
+  address       String?      @db.VarChar(100)
+  city          String?      @db.VarChar(50)
+  state         String?      @db.VarChar(50)
+  zip           String?      @db.VarChar(10)
+  country       String?      @db.VarChar(4)
+  notify        Boolean      @default(false)
+  access        String?      @db.Text
+  notes         String?      @db.TinyText
+  info          String?      @db.TinyText
+  fb_link       String?      @db.VarChar(100)
+  tw_link       String?      @db.VarChar(100)
+  gp_link       String?      @db.VarChar(100)
+  newsletter    Boolean      @default(true)
+  stripe_cus    String?      @db.VarChar(100)
+  modaccess     String?      @db.VarChar(150)
+  plugaccess    String?      @db.VarChar(150)
+  active        users_active @default(n)
+}
+
+enum banlist_type {
+  IP
+  Email
+}
+
+enum coupons_type {
+  p
+  a
+}
+
+enum email_templates_type {
+  news
+  mailer
+}
+
+enum language_langdir {
+  ltr
+  rtl
+}
+
+enum pages_page_type {
+  normal
+  home
+  contact
+  login
+  activate
+  account
+  register
+  search
+  sitemap
+  profile
+  policy
+}
+
+enum pages_access {
+  Public
+  Registered
+  Membership
+}
+
+enum users_active {
+  y
+  n
+  t
+  b
 }
