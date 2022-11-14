@@ -990,3 +990,12 @@ enum users_active {
   t
   b
 }
+
+model app_scene_info {
+  id                  Int    @id @db.UnsignedInt
+  character           String @db.Text
+  character_transform String @db.Text
+  object              String @db.Text
+  object_transform    String @db.Text
+  field               String @db.Text
+}
