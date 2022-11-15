@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { getMembershipState } from "./handler";
+import { saveData, importData } from "./handler";
 
-const userRouter = Router();
-// userRouter.get("/membership/:uid", getMembershipState);
+const sceneDataRouter = Router();
+sceneDataRouter.post("/save/:uid", saveData);
+sceneDataRouter.get("/import/:uid", importData);
 
-export default userRouter;
+export default sceneDataRouter;

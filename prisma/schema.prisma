@@ -992,7 +992,8 @@ enum users_active {
 }
 
 model app_scene_info {
-  id                  Int    @id @db.UnsignedInt
+  id                  Int    @id @default(autoincrement()) @db.UnsignedInt
+  uid                 Int    @unique @db.UnsignedInt
   character           String @db.Text
   character_transform String @db.Text
   object              String @db.Text
