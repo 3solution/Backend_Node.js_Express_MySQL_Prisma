@@ -1,6 +1,12 @@
 import StatusCodes from "http-status-codes";
 import e, { Request, Response } from "express";
-import { saveSceneData, importSceneData } from "src/services/sceneData";
+import {
+  findSceneData,
+  createSceneData,
+  updateSceneData,
+  saveSceneData,
+  getIdeasNames,
+} from "src/services/sceneData";
 
 const { OK } = StatusCodes;
 
@@ -8,8 +14,16 @@ export async function saveData(req: Request, res: Response) {
   try {
     const { uid } = req.params;
     const data = req.body;
-    await saveSceneData(parseInt(uid), data);
-    res.json("OK");
+    const findData = await findSceneData(parseInt(uid), data.name);
+    console.log("findData: ", findData);
+    if (findData) {
+      await updateSceneData(findData.id, parseInt(uid), data);
+      return res.json("update success");
+    } else {
+      await createSceneData(parseInt(uid), data);
+      return res.json("create success");
+    }
+    // res.json("OK");
   } catch (error: any) {
     console.log("error: ", error.message);
     return res.status(500).send(error.message);
@@ -19,10 +33,22 @@ export async function saveData(req: Request, res: Response) {
 export async function importData(req: Request, res: Response) {
   try {
     const { uid } = req.params;
-    const data = await importSceneData(parseInt(uid));
+    const { name } = req.body;
+    const data = await findSceneData(parseInt(uid), name);
     return res.status(200).json({
       ...data,
     });
+  } catch (error: any) {
+    console.log("error: ", error.message);
+    return res.status(500).send(error.message);
+  }
+}
+
+export async function getNames(req: Request, res: Response) {
+  try {
+    const { uid } = req.params;
+    const data = await getIdeasNames(parseInt(uid));
+    return res.json(data);
   } catch (error: any) {
     console.log("error: ", error.message);
     return res.status(500).send(error.message);
