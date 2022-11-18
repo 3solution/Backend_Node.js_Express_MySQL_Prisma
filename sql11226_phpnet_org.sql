@@ -280,12 +280,13 @@ CREATE TABLE `app_scene_info` (
   `uid` int(10) unsigned NOT NULL,
   `character` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `character_transform` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `character_material` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `object` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `object_transform` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `field` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `app_scene_info_uid_key` (`uid`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*Data for the table `app_scene_info` */
 

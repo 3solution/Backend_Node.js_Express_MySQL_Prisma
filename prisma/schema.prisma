@@ -996,6 +996,7 @@ model app_scene_info {
   uid                 Int    @unique @db.UnsignedInt
   character           String @db.Text
   character_transform String @db.Text
+  character_material  String @db.Text
   object              String @db.Text
   object_transform    String @db.Text
   field               String @db.Text
