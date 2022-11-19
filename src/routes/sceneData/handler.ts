@@ -35,7 +35,8 @@ export async function importData(req: Request, res: Response) {
     const { uid } = req.params;
     const { name } = req.body;
     const data = await findSceneData(parseInt(uid), name);
-    return res.status(200).json({
+    console.log("data: ", data);
+    res.json({
       ...data,
     });
   } catch (error: any) {
