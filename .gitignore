@@ -32,5 +32,3 @@ jet-logger.log
 package-lock.json
 
 .scannerwork
-
-migrations/
