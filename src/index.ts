@@ -5,7 +5,7 @@ import requestIp from "request-ip";
 import cors from "cors";
 
 // Start the server
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 80;
 
 app.use(cors());
 app.use(requestIp.mw({ attributeName: "clientIp" }));

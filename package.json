@@ -8,7 +8,7 @@
     "build": "npx ts-node build.ts",
     "build:test": "npm run build && node -r module-alias/register ./dist --env=production",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --quiet --fix",
-    "start": "SET NODE_ENV=development & nodemon",
+    "start": "NODE_ENV=production ./node_modules/.bin/ts-node -r tsconfig-paths/register dist/index.js",
     "start:dev": "SET NODE_ENV=development & nodemon",
     "format": "prettier --write \"{,!(node_modules)/**/}*.js\"",
     "sonarScan": "sonar-scanner"
